@@ -1,0 +1,13 @@
+console.log("===System Information Demo===");
+console.log("platform:", process.platform);
+console.log("architecture:", process.arch);
+console.log("Node.js version:", process.version);
+console.log("Process ID:", process.pid);
+console.log("Current working directory:", process.cwd());
+console.log("Execution path:", process.execPath);
+console.log("\n===Memory Usage===");
+// console.log("RSS:", (mem.rss / 1024 / 1024).toFixed(2), "MB");
+const mem = process.memoryUsage();
+console.log("RSS:", (mem.rss / 1024 / 1024).toFixed(2), "MB");
+console.log("Heap Total:", (mem.heapTotal / 1024 / 1024).toFixed(2), "MB");
+console.log("Heap Used:", (mem.heapUsed / 1024 / 1024).toFixed(2), "MB");

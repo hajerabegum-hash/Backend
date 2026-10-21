@@ -13,9 +13,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/hajerabegum-hash/Backend/issues"
   },
   "homepage": "https://github.com/hajerabegum-hash/Backend#readme"
 }
+
