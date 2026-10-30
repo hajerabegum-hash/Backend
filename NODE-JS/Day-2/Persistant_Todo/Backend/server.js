@@ -66,7 +66,8 @@ app.delete("/todo", (req, res) => {
   fs.writeFileSync(filePath, JSON.stringify(todoArr), "utf8");
 
   res.json({
-    msg: "Todo Deleted Successfully", todoArr
+    msg: "Todo Deleted Successfully",
+    todoArr,
   });
 });
 
