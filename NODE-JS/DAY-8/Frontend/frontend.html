@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo Auth App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 30px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      input,
+      button {
+        padding: 10px;
+        font-size: 16px;
+      }
+      button {
+        cursor: pointer;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+      }
+      #todos {
+        list-style: none;
+        padding: 0;
+      }
+      #todos li {
+        display: flex;
+        justify-content: space-between;
+        background: #f3f4f6;
+        padding: 10px;
+        margin-top: 8px;
+        border-radius: 8px;
+      }
+      .small {
+        font-size: 13px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Signup</h2>
+      <form id="signupForm">
+        <input
+          type="text"
+          id="signupUsername"
+          placeholder="Username"
+          required
+        />
+        <input type="email" id="signupEmail" placeholder="Email" required />
+        <input
+          type="password"
+          id="signupPassword"
+          placeholder="Password"
+          required
+        />
+        <button type="submit">Signup</button>
+      </form>
+
+      <h2>Signin</h2>
+      <form id="signinForm">
+        <input
+          type="text"
+          id="signinUsername"
+          placeholder="Username"
+          required
+        />
+        <input
+          type="password"
+          id="signinPassword"
+          placeholder="Password"
+          required
+        />
+        <button type="submit">Signin</button>
+      </form>
+
+      <div class="small" id="tokenBox">Token: not available</div>
+
+      <h2>Todos</h2>
+      <form id="todoForm">
+        <input type="text" id="todoName" placeholder="Todo name" required />
+        <button type="submit">Add Todo</button>
+      </form>
+
+      <button id="fetchTodosBtn">Fetch Todos</button>
+      <ul id="todos"></ul>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:8080";
+      let token = "";
+
+      const tokenBox = document.getElementById("tokenBox");
+      const todoList = document.getElementById("todos");
+
+      document
+        .getElementById("signupForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const payload = {
+            username: document.getElementById("signupUsername").value,
+            email: document.getElementById("signupEmail").value,
+            password: document.getElementById("signupPassword").value,
+          };
+
+          const res = await fetch(`${API_URL}/signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+          alert(data.message || "Signup done");
+        });
+
+      document
+        .getElementById("signinForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const payload = {
+            username: document.getElementById("signinUsername").value,
+            password: document.getElementById("signinPassword").value,
+          };
+
+          const res = await fetch(`${API_URL}/signin`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+          if (data.token) {
+            token = data.token;
+            tokenBox.textContent = `Token: ${token}`;
+          }
+          alert(data.message || "Signin done");
+        });
+
+      document
+        .getElementById("fetchTodosBtn")
+        .addEventListener("click", fetchTodos);
+      document
+        .getElementById("todoForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (!token) {
+            alert("Please signin first");
+            return;
+          }
+
+          const todo_name = document.getElementById("todoName").value;
+
+          const res = await fetch(`${API_URL}/todos`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              token,
+            },
+            body: JSON.stringify({ todo_name, isDone: false }),
+          });
+
+          const data = await res.json();
+          alert(data.message || "Todo added");
+          document.getElementById("todoName").value = "";
+          fetchTodos();
+        });
+
+      async function fetchTodos() {
+        if (!token) {
+          alert("Please signin first");
+          return;
+        }
+
+        const res = await fetch(`${API_URL}/todos`, {
+          headers: { token },
+        });
+
+        const data = await res.json();
+        todoList.innerHTML = "";
+
+        if (!data.data || data.data.length === 0) {
+          todoList.innerHTML = "<li>No todos found</li>";
+          return;
+        }
+
+        data.data.forEach((todo) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+          <span>${todo.Todo_name} (${todo.isDone ? "Done" : "Pending"})</span>
+          <button data-id="${todo._id}" class="delete-btn">Delete</button>
+        `;
+          todoList.appendChild(li);
+        });
+
+        document.querySelectorAll(".delete-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-id");
+            const res = await fetch(`${API_URL}/todos/${id}`, {
+              method: "DELETE",
+              headers: { token },
+            });
+            const result = await res.json();
+            alert(result.message || "Deleted");
+            fetchTodos();
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
