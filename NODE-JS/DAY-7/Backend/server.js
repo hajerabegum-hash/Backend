@@ -133,7 +133,7 @@ const signupSchema = z.object({
       "Username can only contain letters, numbers, and underscores",
     ),
   email: z
-    .string()
+    .string() 
     .email("Invalid email address")
     .max(20, "Email must be at most 255 characters long")
     .min(3, "Email must be at least 3 characters long"),
